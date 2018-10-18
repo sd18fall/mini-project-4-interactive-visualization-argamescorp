@@ -15,7 +15,7 @@ class PlayboardWindowView():
     def _draw_background(self):
         """eventually this needs to be the live feed of the camera"""
         """but for now we just stay with a white background"""
-        WHITE = (255,255,255)
+        WHITE = (0,0,0)
         self.screen.fill(WHITE)
 
     def draw(self):
@@ -74,8 +74,8 @@ class ArPongMouseController():
 
     def handle_event(self,event):
         if event.type == MOUSEMOTION:
-            self.model.rightPaddle.y=event.pos[1]-self.model.rightPaddle.height/2.0
-            self.model.leftPaddle.y=event.pos[0]-self.model.leftPaddle.height/2.0
+            self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
+            self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
 
 class Ball():
     """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
@@ -120,9 +120,9 @@ class Paddle(Boundry):
     def draw(self,screen):
         pygame.draw.rect(screen,pygame.Color(244, 65, 65),pygame.Rect(self.x,self.y,self.width,self.height))
 
-    # def update(self):
-    #     """maybe used to change position although the position is accessed by the handle_event"""
-    #     pass
+    def update(self,y):
+         """maybe used to change position although the position is accessed by the handle_event"""
+         self.y=y
 
 class Score():
     """this is the score"""
@@ -150,14 +150,15 @@ def Main(model,view,controller):
             controller.handle_event(event)
         model.update()
         view.draw()
-        time.sleep(0.01)
+        time.sleep(0.001)
 
 
 if __name__ == '__main__':
     pygame.init()
-    size = (1000,1000)
-    model = ArPongModel(size,(50,50),10,30,1)
-    view = PlayboardWindowView(model,size)
+    screenSize = (1500,1000)
+    #arguments are screenSize, the boundryOffset, boundryThickness, ballRadius, ballSpeed
+    model = ArPongModel(screenSize,(50,50),10,20,1)
+    view = PlayboardWindowView(model,screenSize)
     view._draw_background()
     controller = ArPongMouseController(model)
     Main(model,view,controller)
