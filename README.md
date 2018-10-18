@@ -1,9 +1,10 @@
 # mini-project-4-interactive-visualization-argamescorp
-Created by: Viktor Deturck, Richard Ballaux, Leon Santen
+Created by: Richard Ballaux, Viktor Deturck, Leon Santen
 
-install OpenCV with on linux:s
+install OpenCV  on linux:
 
 $ conda update anaconda-navigator
 $ conda update navigator-updater
 
 $ pip install opencv-python
+_________________
