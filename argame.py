@@ -45,8 +45,9 @@ class ArPongModel():
     def update(self):
         """updates all the components the model has"""
         self.ball.update()
-        self.leftPaddle.update()
-        self.rightPaddle.update()
+        #the paddles dont need the update because the handle_event can access the position of the paddles
+        #self.leftPaddle.update()
+        #self.rightPaddle.update()
         self.score.update()
 
 
@@ -75,9 +76,6 @@ class ArPongMouseController():
         if event.type == MOUSEMOTION:
             self.model.rightPaddle.y=event.pos[1]-self.model.rightPaddle.height/2.0
             self.model.leftPaddle.y=event.pos[0]-self.model.leftPaddle.height/2.0
-
-
-
 
 class Ball():
     """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
@@ -111,22 +109,20 @@ class Boundry():
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
 
 
-class Paddle():
+class Paddle(Boundry):
     """This is the movable paddle"""
     def __init__(self, x, y,height, width):
         """ Initialize a paddle with the specified height, width,
             and position (x,y) """
-        self.height = height
-        self.width = width
-        self.x = x
-        self.y = y
+        super(Paddle,self).__init__(x,y,height,width)
+
 
     def draw(self,screen):
         pygame.draw.rect(screen,pygame.Color(244, 65, 65),pygame.Rect(self.x,self.y,self.width,self.height))
 
-    def update(self):
-        """maybe used to change position although the position is accessed by the handle_event"""
-        pass
+    # def update(self):
+    #     """maybe used to change position although the position is accessed by the handle_event"""
+    #     pass
 
 class Score():
     """this is the score"""
