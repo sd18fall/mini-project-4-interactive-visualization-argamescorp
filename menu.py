@@ -14,6 +14,7 @@ class PlayboardWindowView():
         self.model=model
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption = ("Pong-AR-Game")
+        #self.counter = 0
     def _draw_background(self):
         """eventually this needs to be the live feed of the camera"""
         """but for now we just stay with a white background"""
@@ -21,8 +22,14 @@ class PlayboardWindowView():
         self.screen.fill(WHITE)
 
     def draw(self):
+        """self.counter += 1
+        if self.counter >1000:
+            menu.state = "game" """
+
         if menu.state == "menu":
             self._draw_background()
+            self.model.cursor.draw(self.screen)
+            pygame.display.update()
         if menu.state == "game":
             self._draw_background()
             for component in self.model.components:
@@ -47,20 +54,28 @@ class ArPongModel():
         self.ball = Ball(50,50,ballRadius,ballSpeed)
         paddleWidth = 10
         paddleHeight = 100
+        cursorRadius = 30
         self.leftPaddle = Paddle(10,self.height/2,paddleHeight,paddleWidth)
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
+        self.cursor = Cursor(self.width/2,self.height/2, cursorRadius)
         self.score = Score()
         self.components = (self.upperboundry,self.lowerboundry,self.ball,self.leftPaddle,self.rightPaddle,self.score)
         self.ball.x=100
         self.ball.y=100
 
     def update(self):
-        """updates all the components the model has"""
-        self.ball.update()
-        #the paddles dont need the update because the handle_event can access the position of the paddles
-        #self.leftPaddle.update()
-        #self.rightPaddle.update()
-        self.score.update()
+        """updates all the components the model has when state is "game" to prevent the ball from moving before game settings selected"""
+        if menu.state == "menu":
+            #self.cursor.update()
+            #!!! When running this update function window closes automatically
+            pass
+
+        if menu.state == "game":
+            self.ball.update()
+            #the paddles dont need the update because the handle_event can access the position of the paddles
+            #self.leftPaddle.update()
+            #self.rightPaddle.update()
+            self.score.update()
 
 
 
@@ -86,8 +101,13 @@ class ArPongMouseController():
 
     def handle_event(self,event):
         if event.type == MOUSEMOTION:
-            self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
-            self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
+
+            if menu.state == "menu":
+                self.model.cursor.update(event.pos[0], event.pos[1])
+
+            if menu.state == "game":
+                self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
+                self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
 
 class Ball():
     """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
@@ -119,6 +139,21 @@ class Boundry():
 
     def draw(self,screen):
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
+
+class Cursor():
+    def __init__(self, x, y, radius):
+        self.x = x
+        self.y = y
+        self.radius = radius
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, (66, 134, 244), (self.x,self.y), self.radius)
+
+
+    def update(self, x, y):
+        self.x = x
+        self.y = y
+
 
 
 class Paddle(Boundry):
@@ -176,7 +211,3 @@ if __name__ == '__main__':
     view._draw_background()
     controller = ArPongMouseController(model)
     Main(model,view,controller)
-
-
-if __name__ == '__main__':
-    pygame.init()
