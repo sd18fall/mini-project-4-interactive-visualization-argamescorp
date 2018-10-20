@@ -39,8 +39,8 @@ class PlayboardWindowView():
 class Menu():
     """State machine that regulates whether or not we see the menu or the game"""
     def __init__(self):
-        self.state = "menu"
-        """states are "menu" and "game" """
+        self.state = "menu" #states are "menu" and "game"
+
 
 
 class ArPongModel():
@@ -54,7 +54,7 @@ class ArPongModel():
         self.ball = Ball(50,50,ballRadius,ballSpeed)
         paddleWidth = 10
         paddleHeight = 100
-        cursorRadius = 30
+        cursorRadius = 20
         self.leftPaddle = Paddle(10,self.height/2,paddleHeight,paddleWidth)
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
         self.cursor = Cursor(self.width/2,self.height/2, cursorRadius)
@@ -62,13 +62,18 @@ class ArPongModel():
         self.components = (self.upperboundry,self.lowerboundry,self.ball,self.leftPaddle,self.rightPaddle,self.score)
         self.ball.x=100
         self.ball.y=100
+        self.triggerarea1 = CursorRecognition(300, [0,0,self.width/2,self.height])
 
     def update(self):
         """updates all the components the model has when state is "game" to prevent the ball from moving before game settings selected"""
+
+
         if menu.state == "menu":
+            self.triggerarea1.areaSurveillance(self.cursor)
             #self.cursor.update()
             #!!! When running this update function window closes automatically
-            pass
+
+
 
         if menu.state == "game":
             self.ball.update()
@@ -147,13 +152,34 @@ class Cursor():
         self.radius = radius
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (66, 134, 244), (self.x,self.y), self.radius)
+        pygame.draw.circle(screen, (255, 20, 147), (self.x,self.y), self.radius)
 
 
     def update(self, x, y):
         self.x = x
         self.y = y
 
+class CursorRecognition():
+    """Takes an
+    counter_limit: int, the limit for when "something" should be triggered
+    triggerArea: list of form: [x1,y1,x2,y2] - 1 referring to lower left corner of rectangle, 2 referring to upper right corner of rectangle
+
+    counts up every loop the XY object is still in the same area
+
+    >>>
+    """
+    def __init__(self, counter_limit, area):
+        self.counter = 0 #Counter for area
+        self.limit = counter_limit
+        self.triggerArea = area
+
+    def areaSurveillance(self, cursor):
+        if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
+            if int(cursor.y) in range(int(self.triggerArea[1]), int(self.triggerArea[3]+1)):
+                self.counter += 1
+
+        if self.counter == self.limit:
+            menu.state = "game"
 
 
 class Paddle(Boundry):
