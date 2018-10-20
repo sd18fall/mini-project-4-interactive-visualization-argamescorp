@@ -15,7 +15,7 @@ def main():
     clock = pygame.time.Clock()
     fps = 50
     bg = [255, 255, 255]
-    size =[200, 200]
+    size =[500, 500]
 
 
     screen = pygame.display.set_mode(size)
@@ -59,7 +59,7 @@ def main():
         # targets although the bullet is not destroyed but can be done with
         # simple trick bellow
         hit = pygame.sprite.spritecollide(player, wall_group, True)
-
+        print('hit',hit)
         if hit:
             # if collision is detected call a function in your case destroy
             # bullet
