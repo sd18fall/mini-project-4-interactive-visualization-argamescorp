@@ -14,6 +14,8 @@ class PlayboardWindowView():
         self.model=model
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption = ("Pong-AR-Game")
+        self.myfont = pygame.font.SysFont("monospace", 40)
+        self.myfontColor = (0,250,0)
         #self.counter = 0
     def _draw_background(self):
         """eventually this needs to be the live feed of the camera"""
@@ -28,6 +30,9 @@ class PlayboardWindowView():
 
         if menu.state == "menu":
             self._draw_background()
+            pygame.draw.rect(self.screen, (250,250,0), pygame.Rect(50, model.height/2-50, 100,100))
+            menutext = self.myfont.render("Keep your cursor in the square to start the game", 1, self.myfontColor)
+            self.screen.blit(menutext, (50,50))
             self.model.cursor.draw(self.screen)
             pygame.display.update()
         if menu.state == "game":
@@ -62,7 +67,7 @@ class ArPongModel():
         self.components = (self.upperboundry,self.lowerboundry,self.ball,self.leftPaddle,self.rightPaddle,self.score)
         self.ball.x=100
         self.ball.y=100
-        self.triggerarea1 = CursorRecognition(300, [0,0,self.width/2,self.height])
+        self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
 
     def update(self):
         """updates all the components the model has when state is "game" to prevent the ball from moving before game settings selected"""
