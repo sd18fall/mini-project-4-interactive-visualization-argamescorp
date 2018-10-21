@@ -20,9 +20,12 @@ class PlayboardWindowView():
 
     def draw(self):
         self._draw_background()
-        for component in self.model.components:
-            component.draw(self.screen)
+        # for component in self.model.components:
+        #     component.draw(self.screen)
+        self.model.boundryGroup.draw(self.screen)
+
         pygame.display.update()
+
 
 class ArPongModel():
     """encodes a model of the game state"""
@@ -39,8 +42,23 @@ class ArPongModel():
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
         self.score = Score()
         self.components = (self.upperboundry,self.lowerboundry,self.ball,self.leftPaddle,self.rightPaddle,self.score)
-        self.ball.x=100
-        self.ball.y=100
+        self.ball.x=200
+        self.ball.y=200
+        #initialize the sprite groups for collision detection
+        self.boundryGroup = pygame.sprite.Group()
+        self.boundryGroup.add(self.upperboundry)
+        self.boundryGroup.add(self.lowerboundry)
+
+        self.paddleGroup = pygame.sprite.Group()
+        self.paddleGroup.add(self.leftPaddle)
+        self.paddleGroup.add(self.rightPaddle)
+
+        self.ballGroup = pygame.sprite.Group()
+        self.ballGroup.add(self.ball)
+
+        rightGoalGroup = pygame.sprite.Group()
+        rightGoalGroup = pygame.sprite.Group()
+
 
     def update(self):
         """updates all the components the model has"""
@@ -49,6 +67,14 @@ class ArPongModel():
         #self.leftPaddle.update()
         #self.rightPaddle.update()
         self.score.update()
+        boundryBounce = pygame.sprite.spritecollide(self.ball,self.boundryGroup,False)
+        print(boundryBounce)
+        if len(boundryBounce)>0:
+            self.ball.movingDirection[1] = -self.ball.movingDirection[1]
+
+        paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
+        if len(paddleBounce)>0:
+            self.ball.movingDirection[0] = -self.ball.movingDirection[0]
 
 
 
@@ -77,33 +103,44 @@ class ArPongMouseController():
             self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
             self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
 
-class Ball():
+class Ball(pygame.sprite.Sprite):
     """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
     def __init__(self,x,y,radius,speed):
+        pygame.sprite.Sprite.__init__(self)
         self.x=x
         self.y=y
         self.radius=radius
         self.speed=speed
-        #the direction needs to be between 0-1
-        self.direction = (1,1)
+        #the movingDirection needs to be between 0-1
+        self.movingDirection = [1,1]
+        
+        self.rect = pygame.Surface([2*self.radius,2*self.radius]).get_rect()
+        self.rect.center = [self.x,self.y]
+
 
     def update(self):
-        """after one loop has gone by, move the ball in the direction of the movement"""
-        self.x=self.x + self.direction[0]*self.speed
-        self.y = self.y + self.direction[1]*self.speed
+        """after one loop has gone by, move the ball in the movingDirection of the movement"""
+        self.x=self.x + self.movingDirection[0]*self.speed
+        self.y = self.y + self.movingDirection[1]*self.speed
 
 
     def draw(self,screen):
         """draw the ball on its new position"""
         pygame.draw.circle(screen, (66, 134, 244), (self.x,self.y), self.radius)
 
-class Boundry():
+class Boundry(pygame.sprite.Sprite):
     """This is a class for the boundry lines"""
     def __init__(self,x,y,height,width):
+        pygame.sprite.Sprite.__init__(self)
         self.x=x
         self.y=y
         self.height=height
         self.width = width
+
+        self.image = pygame.Surface([width,height])
+        self.image.fill([69,244,66])
+        self.rect = self.image.get_rect()
+        self.rect.center = [self.x+width/2,self.y+height/2]
 
     def draw(self,screen):
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
@@ -133,8 +170,8 @@ class Score():
 
     def draw(self,screen):
         """print score for now, needs to print the score on the screen"""
-        print("Player 1: ", self.player1)
-        print("Player 2: ", self.player2)
+        # print("Player 1: ", self.player1)
+        # print("Player 2: ", self.player2)
 
     def update(self):
         """needs to count the score"""
