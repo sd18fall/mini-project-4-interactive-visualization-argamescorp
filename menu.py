@@ -4,7 +4,6 @@ Menu structure that changes the settings for the game with a controller
 @authors: Richard Ballaux, Viktor Deturck, Leon Santen
 """
 
-
 import pygame
 from pygame.locals import *
 import time
@@ -70,7 +69,7 @@ class ArPongModel():
 
 
         if menu.state == "menu":
-            self.triggerarea1.areaSurveillance(self.cursor)
+            self.triggerarea1.areaSurveillance(self.cursor, "game")
             #self.cursor.update()
             #!!! When running this update function window closes automatically
 
@@ -174,13 +173,17 @@ class CursorRecognition():
         self.limit = counter_limit
         self.triggerArea = area
 
-    def areaSurveillance(self, cursor):
+    def areaSurveillance(self, cursor, change_to_this_state):
         if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
             if int(cursor.y) in range(int(self.triggerArea[1]), int(self.triggerArea[3]+1)):
                 self.counter += 1
+            else:
+                self.counter = 0
+        else:
+            self.counter = 0
 
         if self.counter == self.limit:
-            menu.state = "game"
+            menu.state = change_to_this_state
 
 
 class Paddle(Boundry):
