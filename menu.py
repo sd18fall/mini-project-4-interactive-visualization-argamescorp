@@ -173,7 +173,7 @@ class CursorRecognition():
         self.limit = counter_limit
         self.triggerArea = area
 
-    def areaSurveillance(self, cursor, change_to_this_state):
+    def areaSurveillance(self, cursor, new_state, new_ball_speed = 1):
         if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
             if int(cursor.y) in range(int(self.triggerArea[1]), int(self.triggerArea[3]+1)):
                 self.counter += 1
@@ -183,7 +183,9 @@ class CursorRecognition():
             self.counter = 0
 
         if self.counter == self.limit:
-            menu.state = change_to_this_state
+            menu.state = new_state
+            model.ball.speed = new_ball_speed
+
 
 
 class Paddle(Boundry):
