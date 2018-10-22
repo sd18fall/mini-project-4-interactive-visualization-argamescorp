@@ -27,8 +27,8 @@ $ pip install opencv-python
 Run game via the terminal. Navigate to the folder the folder the game file is located in.
 Run the following command:
 
-$ python argame.py
-
+$ python argame.pyi
+r
 _or_
 
 $ python3 argame.py
