@@ -1,6 +1,5 @@
 """AR Game file
 
-how do we do the collision detection
 @authors: Richard Ballaux, Viktor Deturck, Leon Santen"""
 import pygame
 from pygame.locals import *
@@ -14,23 +13,53 @@ class PlayboardWindowView():
         self.model=model
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption = ("Pong-AR-Game")
-        self.myfont = pygame.font.SysFont("monospace", 40)
-        self.myfontColor = (0,250,0)
-    def _draw_background(self):
-        """eventually this needs to be the live feed of the camera"""
-        """but for now we just stay with a white background"""
-        WHITE = (0,0,0)
-        self.screen.fill(WHITE)
+        self.myfont = pygame.font.SysFont("monospace", 42)
+        self.numberfont = pygame.font.SysFont("monospace", 85, bold=True)
+        self.ColorGreen = (0,250,0)
+        self.ColorBlack = (0,0,0)
+    def _draw_background(self, color = (0,0,0)):
+        """draw background with plain Color
+        color -- RGB format (R,G,B), values from 0 to 255, default color is black"""
+        self.screen.fill(color)
 
     def draw(self):
 
         if menu.state == "menu":
             self._draw_background()
             pygame.draw.rect(self.screen, (250,250,0), pygame.Rect(50, model.height/2-50, 100,100))
-            menutext = self.myfont.render("Keep your cursor in the square to start the game", 1, self.myfontColor)
+            menutext = self.myfont.render("Keep your cursor in the square to start the game", 1, self.ColorGreen)
             self.screen.blit(menutext, (50,50))
             self.model.cursor.draw(self.screen)
             pygame.display.update()
+
+        if menu.state == "select_speed":
+            self._draw_background((255, 224, 254))
+            menutext = self.myfont.render("Select a speed by hovering over the desired speed", 1, self.ColorBlack)
+            self.screen.blit(menutext, (50,50))
+            #Square 1
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*1)-50, model.height/2-150, 150,150))
+            number = self.numberfont.render("1", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*1),model.height/2-115))
+            #Square 2
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*2)-50, model.height/2+150, 150,150))
+            number = self.numberfont.render("2", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*2),model.height/2+185))
+            #Square 3
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*3)-50, model.height/2-150, 150,150))
+            number = self.numberfont.render("3", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*3),model.height/2-115))
+            #Square 4
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*4)-50, model.height/2+150, 150,150))
+            number = self.numberfont.render("4", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*4),model.height/2+185))
+            #Square 5
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*5)-50, model.height/2-150, 150,150))
+            number = self.numberfont.render("5", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*5),model.height/2-115))
+
+            self.model.cursor.draw(self.screen)
+            pygame.display.update()
+
 
         if menu.state == "game":
             self._draw_background()
@@ -38,13 +67,25 @@ class PlayboardWindowView():
                  component.draw(self.screen)
             #self.model.boundaryGroup.draw(self.screen)
             #self.model.ballGroup.draw(self.screen)
+            self.model.cursor.draw(self.screen)
             pygame.display.update()
 
 class Menu():
-    """State machine that regulates whether or not we see the menu or the game"""
-    def __init__(self):
-        self.state = "menu" #states are "menu" and "game"
+    """State machine that regulates whether or not we see the menu or the
+    The different states are:
+    - "menu"
+    - "select_speed"
+    - "game"
 
+    Instruction for adding a state:
+    - You don't need to add a state in the Menu() class. Just update the docstring to keep the documentation updated
+    - Add an if-statement with the state name to the draw() function in the class PlayboardWindowView()
+    - Add an if-statement with the state name t0 the handle_event() function in the class ArPongMouseController()
+    - Add
+
+    """
+    def __init__(self):
+        self.state = "menu"
 
 class ArPongModel():
     """encodes a model of the game state"""
@@ -60,7 +101,7 @@ class ArPongModel():
         cursorRadius = 20
         self.leftPaddle = Paddle(10,self.height/2,paddleHeight,paddleWidth)
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
-        self.cursor = Cursor(self.width/2,self.height/2, cursorRadius)
+        self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
         self.score = Score()
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
 
@@ -115,7 +156,7 @@ class ArPongMouseController():
     def handle_event(self,event):
         if event.type == MOUSEMOTION:
 
-            if menu.state == "menu":
+            if menu.state == "menu" or "select_speed":
                 self.model.cursor.update(event.pos[0], event.pos[1])
 
             if menu.state == "game":
@@ -179,7 +220,9 @@ class Cursor():
         self.radius = radius
 
     def draw(self, screen):
+        print(self.x, self.y)
         pygame.draw.circle(screen, (255, 20, 147), (self.x,self.y), self.radius)
+
 
 
     def update(self, x, y):
@@ -267,7 +310,7 @@ if __name__ == '__main__':
     pygame.init()
     screenSize = (1500,1000)
     menu = Menu()
-    menu.state = "menu"
+    menu.state = "select_speed"
     #arguments are screenSize, the boundaryOffset, boundaryThickness, ballRadius, ballSpeed
     model = ArPongModel(screenSize,(50,50),10,20,1)
     view = PlayboardWindowView(model,screenSize, menu)
