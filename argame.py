@@ -37,6 +37,7 @@ class PlayboardWindowView():
             for component in self.model.components:
                  component.draw(self.screen)
             #self.model.boundaryGroup.draw(self.screen)
+            #self.model.ballGroup.draw(self.screen)
             pygame.display.update()
 
 class Menu():
@@ -53,7 +54,7 @@ class ArPongModel():
         boundaryLength = self.width-2*boundaryOffset[0]
         self.upperboundary = boundary(boundaryOffset[0],boundaryOffset[1],boundaryThickness,boundaryLength)
         self.lowerboundary = boundary(boundaryOffset[0],self.height-boundaryOffset[1],boundaryThickness,boundaryLength)
-        self.ball = Ball(50,50,ballRadius,ballSpeed)
+        self.ball = Ball(500,500,ballRadius,ballSpeed)
         paddleWidth = 10
         paddleHeight = 100
         cursorRadius = 20
@@ -62,8 +63,6 @@ class ArPongModel():
         self.cursor = Cursor(self.width/2,self.height/2, cursorRadius)
         self.score = Score()
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
-        self.ball.x=500
-        self.ball.y=500
 
         self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #initialize the sprite groups for collision detection
@@ -97,14 +96,15 @@ class ArPongModel():
             #self.leftPaddle.update()
             #self.rightPaddle.update()
             self.score.update()
-            boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False,False)
+
+            boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False)
             print(boundaryBounce)
             if len(boundaryBounce)>0:
                 self.ball.movingDirection[1] = -self.ball.movingDirection[1]
 
-            # paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
-            # if len(paddleBounce)>0:
-            #     self.ball.movingDirection[0] = -self.ball.movingDirection[0]
+            paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
+            if len(paddleBounce)>0:
+                self.ball.movingDirection[0] = -self.ball.movingDirection[0]
 
 
 class ArPongMouseController():
@@ -135,16 +135,20 @@ class Ball(pygame.sprite.Sprite):
         self.radius=radius
         self.speed=speed
         #the movingDirection needs to be between 0-1
-        self.movingDirection = [1,1]
+        self.movingDirection = [1,-1]
 
-        self.rect = pygame.Surface([2*self.radius,2*self.radius]).get_rect()
+        self.image = pygame.Surface([2*self.radius,2*self.radius])
+        self.image.fill([69,0,66])
+        self.rect = self.image.get_rect()
         self.rect.center = [self.x,self.y]
 
 
     def update(self):
         """after one loop has gone by, move the ball in the movingDirection of the movement"""
         self.x=self.x + self.movingDirection[0]*self.speed
+        self.rect.x = self.rect.x + self.movingDirection[0]*self.speed
         self.y = self.y + self.movingDirection[1]*self.speed
+        self.rect.y = self.rect.y + self.movingDirection[1]*self.speed
 
 
     def draw(self,screen):
@@ -161,7 +165,6 @@ class boundary(pygame.sprite.Sprite):
         self.width = width
 
         self.image = pygame.Surface([self.width,self.height])
-        self.image.fill([69,244,66])
         self.rect = self.image.get_rect()
         self.rect.center = [self.x+width/2,self.y+height/2]
 
