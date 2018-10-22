@@ -26,7 +26,7 @@ def main():
     player.vy = 5
 
 
-    wall = Sprite([100, 60])
+    wall = Sprite([40, 200])
 
     wall_group = pygame.sprite.Group()
     wall_group.add(wall)
@@ -38,6 +38,8 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
+
+
 
         key = pygame.key.get_pressed()
 
@@ -63,7 +65,9 @@ def main():
         if hit:
             # if collision is detected call a function in your case destroy
             # bullet
-            player.image.fill((255, 255, 255))
+
+        else:
+            player.rect.y += direction
 
         player_group.draw(screen)
         wall_group.draw(screen)

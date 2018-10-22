@@ -6,6 +6,8 @@ import pygame
 from pygame.locals import *
 import time
 
+
+
 class PlayboardWindowView():
     """this board includes the outlines, the ball, the paddles and the goals"""
     def __init__(self,model,screen_size, menu):
@@ -29,13 +31,14 @@ class PlayboardWindowView():
             self.screen.blit(menutext, (50,50))
             self.model.cursor.draw(self.screen)
             pygame.display.update()
+
         if menu.state == "game":
             self._draw_background()
-            # for component in self.model.components:
-            #     component.draw(self.screen)
-            self.model.boundryGroup.draw(self.screen)
-
+            for component in self.model.components:
+                 component.draw(self.screen)
+            #self.model.boundaryGroup.draw(self.screen)
             pygame.display.update()
+
 class Menu():
     """State machine that regulates whether or not we see the menu or the game"""
     def __init__(self):
@@ -44,12 +47,12 @@ class Menu():
 
 class ArPongModel():
     """encodes a model of the game state"""
-    def __init__(self,windowSize,boundryOffset, boundryThickness,ballRadius, ballSpeed):
+    def __init__(self,windowSize,boundaryOffset, boundaryThickness,ballRadius, ballSpeed):
         self.width = windowSize[0]
         self.height = windowSize[1]
-        boundryLength = self.width-2*boundryOffset[0]
-        self.upperboundry = Boundry(boundryOffset[0],boundryOffset[1],boundryThickness,boundryLength)
-        self.lowerboundry = Boundry(boundryOffset[0],self.height-boundryOffset[1],boundryThickness,boundryLength)
+        boundaryLength = self.width-2*boundaryOffset[0]
+        self.upperboundary = boundary(boundaryOffset[0],boundaryOffset[1],boundaryThickness,boundaryLength)
+        self.lowerboundary = boundary(boundaryOffset[0],self.height-boundaryOffset[1],boundaryThickness,boundaryLength)
         self.ball = Ball(50,50,ballRadius,ballSpeed)
         paddleWidth = 10
         paddleHeight = 100
@@ -58,14 +61,15 @@ class ArPongModel():
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
         self.cursor = Cursor(self.width/2,self.height/2, cursorRadius)
         self.score = Score()
-        self.components = (self.upperboundry,self.lowerboundry,self.ball,self.leftPaddle,self.rightPaddle,self.score)
-        self.ball.x=200
-        self.ball.y=200
+        self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
+        self.ball.x=500
+        self.ball.y=500
+
         self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #initialize the sprite groups for collision detection
-        self.boundryGroup = pygame.sprite.Group()
-        self.boundryGroup.add(self.upperboundry)
-        self.boundryGroup.add(self.lowerboundry)
+        self.boundaryGroup = pygame.sprite.Group()
+        self.boundaryGroup.add(self.upperboundary)
+        self.boundaryGroup.add(self.lowerboundary)
 
         self.paddleGroup = pygame.sprite.Group()
         self.paddleGroup.add(self.leftPaddle)
@@ -75,14 +79,14 @@ class ArPongModel():
         self.ballGroup.add(self.ball)
 
         rightGoalGroup = pygame.sprite.Group()
-        rightGoalGroup = pygame.sprite.Group()
+        leftGoalGroup = pygame.sprite.Group()
 
 
     def update(self):
         """updates all the components the model has"""
 
         if menu.state == "menu":
-            self.triggerarea1.areaSurveillance(self.cursor, "game")
+            self.triggerarea1.areaSurveillance(self.cursor, menu, "state", "game")
             #self.cursor.update()
             #!!! When running this update function window closes automatically
 
@@ -93,31 +97,15 @@ class ArPongModel():
             #self.leftPaddle.update()
             #self.rightPaddle.update()
             self.score.update()
-            boundryBounce = pygame.sprite.spritecollide(self.ball,self.boundryGroup,False)
-            print(boundryBounce)
-            if len(boundryBounce)>0:
+            boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False,False)
+            print(boundaryBounce)
+            if len(boundaryBounce)>0:
                 self.ball.movingDirection[1] = -self.ball.movingDirection[1]
 
-            paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
-            if len(paddleBounce)>0:
-                self.ball.movingDirection[0] = -self.ball.movingDirection[0]
+            # paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
+            # if len(paddleBounce)>0:
+            #     self.ball.movingDirection[0] = -self.ball.movingDirection[0]
 
-
-
-
-                    # elif event.type is pygame.MOUSEBUTTONDOWN:
-                    #     if self.add_tile_type == 'lava':
-                    #         self._add_lava(event.pos)
-                    #     if self.add_tile_type =='swamp':
-                    #         self._add_swamp(event.pos)
-                    # elif event.type is pygame.KEYDOWN:
-                    #     if event.key == pygame.K_SPACE:
-                    #         self.paul.run_astar(self.cake.cell_coordinates, self)
-                    #         self.paul.get_path()
-                    #     elif event.key == pygame.K_l:
-                    #         self.add_tile_type = 'lava'
-                    #     elif event.key==pygame.K_s:
-                    #         self.add_tile_type = 'swamp'
 
 class ArPongMouseController():
     """handles input first from the mouse and later on from the camera"""
@@ -163,8 +151,8 @@ class Ball(pygame.sprite.Sprite):
         """draw the ball on its new position"""
         pygame.draw.circle(screen, (66, 134, 244), (self.x,self.y), self.radius)
 
-class Boundry(pygame.sprite.Sprite):
-    """This is a class for the boundry lines"""
+class boundary(pygame.sprite.Sprite):
+    """This is a class for the boundary lines"""
     def __init__(self,x,y,height,width):
         pygame.sprite.Sprite.__init__(self)
         self.x=x
@@ -172,7 +160,7 @@ class Boundry(pygame.sprite.Sprite):
         self.height=height
         self.width = width
 
-        self.image = pygame.Surface([width,height])
+        self.image = pygame.Surface([self.width,self.height])
         self.image.fill([69,244,66])
         self.rect = self.image.get_rect()
         self.rect.center = [self.x+width/2,self.y+height/2]
@@ -197,20 +185,25 @@ class Cursor():
 
 
 class CursorRecognition():
-    """Takes an
-    counter_limit: int, the limit for when "something" should be triggered
-    triggerArea: list of form: [x1,y1,x2,y2] - 1 referring to lower left corner of rectangle, 2 referring to upper right corner of rectangle
+    """Recognizes a cursor that hovers over an area and triggers a change of an attribute of an object_to_change.
+    counts up every loop the XY object is still in the same area.
 
-    counts up every loop the XY object is still in the same area
-
-    >>>
+    counter_limit -- int, the limit for when "something" should be triggered
+    triggerArea -- list of form: [x1,y1,x2,y2] - 1 referring to lower left corner of rectangle, 2 referring to upper right corner of rectangle
     """
     def __init__(self, counter_limit, area):
         self.counter = 0 #Counter for area
         self.limit = counter_limit
         self.triggerArea = area
 
-    def areaSurveillance(self, cursor, new_state, new_ball_speed = 1):
+    def areaSurveillance(self, cursor, object_to_change, attribute_of_object, change_attribute_to):
+        """With a specific cursor as an input, change the attribute of an object to a specific value
+
+        cursor -- cursor.x should be x coordinate, cursor.y should be y coordinate
+        object_to_change -- pass in the class object to change
+        attribute_of_object -- as a string, pass in the attribute of the corresponding class object to change
+        change_attribute_to -- pass in the value object.attribute needs to be changed to when triggered
+        """
         if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
             if int(cursor.y) in range(int(self.triggerArea[1]), int(self.triggerArea[3]+1)):
                 self.counter += 1
@@ -220,11 +213,10 @@ class CursorRecognition():
             self.counter = 0
 
         if self.counter == self.limit:
-            menu.state = new_state
-            model.ball.speed = new_ball_speed
+            setattr(object_to_change, attribute_of_object, change_attribute_to)
 
 
-class Paddle(Boundry):
+class Paddle(boundary):
     """This is the movable paddle"""
     def __init__(self, x, y,height, width):
         """ Initialize a paddle with the specified height, width,
@@ -273,7 +265,7 @@ if __name__ == '__main__':
     screenSize = (1500,1000)
     menu = Menu()
     menu.state = "menu"
-    #arguments are screenSize, the boundryOffset, boundryThickness, ballRadius, ballSpeed
+    #arguments are screenSize, the boundaryOffset, boundaryThickness, ballRadius, ballSpeed
     model = ArPongModel(screenSize,(50,50),10,20,1)
     view = PlayboardWindowView(model,screenSize, menu)
     view._draw_background()
