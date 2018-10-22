@@ -73,9 +73,13 @@ def getCoords():
             i +=1
     print (centerCoords)
 
-setUp([1280,720])
-while True:
-    print('test')
-    getCoords()
-    cv2.imshow("cam",img)
-    cv2.waitKey(10)
+def main():
+    setUp([1280,720])
+    while True:
+        print('test')
+        getCoords()
+        cv2.imshow("cam",img)
+        cv2.waitKey(10)
+        
+if __name__ == '__main__':
+    main()
