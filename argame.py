@@ -23,6 +23,7 @@ class PlayboardWindowView():
         self.screen.fill(color)
 
     def draw(self):
+        """draws corresponding to the state of menu.state the different menu settings or game"""
 
         if menu.state == "menu":
             self._draw_background()
@@ -37,23 +38,23 @@ class PlayboardWindowView():
             menutext = self.myfont.render("Select a speed by hovering over the desired speed", 1, self.ColorBlack)
             self.screen.blit(menutext, (50,50))
             #Square 1
-            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*1)-50, model.height/2-150, 150,150))
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*1)-50, int(model.height/2)-150, 150,150))
             number = self.numberfont.render("1", 1, self.ColorBlack)
             self.screen.blit(number, (int((model.width/6)*1),model.height/2-115))
             #Square 2
-            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*2)-50, model.height/2+150, 150,150))
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*2)-50, int(model.height/2)+150, 150,150))
             number = self.numberfont.render("2", 1, self.ColorBlack)
             self.screen.blit(number, (int((model.width/6)*2),model.height/2+185))
             #Square 3
-            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*3)-50, model.height/2-150, 150,150))
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*3)-50, int(model.height/2)-150, 150,150))
             number = self.numberfont.render("3", 1, self.ColorBlack)
             self.screen.blit(number, (int((model.width/6)*3),model.height/2-115))
             #Square 4
-            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*4)-50, model.height/2+150, 150,150))
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*4)-50, int(model.height/2)+150, 150,150))
             number = self.numberfont.render("4", 1, self.ColorBlack)
             self.screen.blit(number, (int((model.width/6)*4),model.height/2+185))
             #Square 5
-            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*5)-50, model.height/2-150, 150,150))
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*5)-50, int(model.height/2)-150, 150,150))
             number = self.numberfont.render("5", 1, self.ColorBlack)
             self.screen.blit(number, (int((model.width/6)*5),model.height/2-115))
 
@@ -104,8 +105,9 @@ class ArPongModel():
         self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
         self.score = Score()
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
-
+        #Tigger areas
         self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
+        #self.triggerNumber1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #initialize the sprite groups for collision detection
         self.boundaryGroup = pygame.sprite.Group()
         self.boundaryGroup.add(self.upperboundary)
@@ -127,9 +129,6 @@ class ArPongModel():
 
         if menu.state == "menu":
             self.triggerarea1.areaSurveillance(self.cursor, menu, "state", "game")
-            #self.cursor.update()
-            #!!! When running this update function window closes automatically
-
 
         if menu.state == "game":
             self.ball.update()
