@@ -2,7 +2,7 @@ import cv2
 cv2.__version__
 import numpy as np
 
-def setUp(resolution):
+def setup(resolution):
     # Defining a range of the color green
     global lowerBound
     lowerBound=np.array([33,80,40])
@@ -15,9 +15,12 @@ def setUp(resolution):
     global vertRes
     vertRes = resolution[1]
 
-def getCoords():
     # Make a VideoCapture object (camera)
     cam= cv2.VideoCapture(0)
+    return cam
+
+
+def getCoords(cam):
 
     # Making kernel to delete noise (open = erosion followed by dilation, close is reversed)
     # MORPH_OPEN deletes noise outside of the object, MORPH_CLOSE inside of the object)
@@ -33,7 +36,6 @@ def getCoords():
     orImg=cv2.resize(orImg,(horRes,vertRes))
     global img
     img = cv2.flip(orImg, 1)
-
     # convert BGR to HSV
     imgHSV= cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
     # create the Mask, look for the object in this color range
@@ -71,15 +73,16 @@ def getCoords():
             if i == len(widthList):
                 break
             i +=1
-    print (centerCoords)
+    return centerCoords,img
+    #print (centerCoords)
 
 def main():
-    setUp([1280,720])
+    cam = setup([1280,720])
     while True:
-        print('test')
-        getCoords()
+        coords,img = getCoords(cam)
+        print(coords)
         cv2.imshow("cam",img)
         cv2.waitKey(10)
-        
+
 if __name__ == '__main__':
     main()

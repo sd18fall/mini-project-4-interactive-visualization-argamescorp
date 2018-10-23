@@ -4,6 +4,8 @@
 import pygame
 from pygame.locals import *
 import time
+import ObjectRecogImplementation as OR
+from PIL import Image
 
 
 
@@ -11,16 +13,23 @@ class PlayboardWindowView():
     """this board includes the outlines, the ball, the paddles and the goals"""
     def __init__(self,model,screen_size, menu):
         self.model=model
+        self.screen_size = screen_size
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption = ("Pong-AR-Game")
         self.myfont = pygame.font.SysFont("monospace", 42)
         self.numberfont = pygame.font.SysFont("monospace", 85, bold=True)
         self.ColorGreen = (0,250,0)
         self.ColorBlack = (0,0,0)
+
     def _draw_background(self, color = (0,0,0)):
         """draw background with plain Color
         color -- RGB format (R,G,B), values from 0 to 255, default color is black"""
         self.screen.fill(color)
+        # newSurface = pygame.Surface(self.screen_size)
+        # pygame.surfarray.map_array(newSurface,self.model.cameraImage)
+        # #print(self.screen_size,self.model.cameraImage.size)
+        # self.screen.blit(newSurface,(0,0))
+        # pygame.display.update()
 
     def draw(self):
         """draws corresponding to the state of menu.state the different menu settings or game"""
@@ -68,7 +77,7 @@ class PlayboardWindowView():
                  component.draw(self.screen)
             #self.model.boundaryGroup.draw(self.screen)
             #self.model.ballGroup.draw(self.screen)
-            self.model.cursor.draw(self.screen)
+            #self.model.cursor.draw(self.screen)
             pygame.display.update()
 
 class Menu():
@@ -90,7 +99,7 @@ class Menu():
 
 class ArPongModel():
     """encodes a model of the game state"""
-    def __init__(self,windowSize,boundaryOffset, boundaryThickness,ballRadius, ballSpeed):
+    def __init__(self,windowSize,boundaryOffset, boundaryThickness,ballRadius, ballSpeed,camera):
         self.width = windowSize[0]
         self.height = windowSize[1]
         boundaryLength = self.width-2*boundaryOffset[0]
@@ -109,6 +118,8 @@ class ArPongModel():
         self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #self.triggerNumber1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #initialize the sprite groups for collision detection
+        self.camera = camera
+        self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
         self.boundaryGroup = pygame.sprite.Group()
         self.boundaryGroup.add(self.upperboundary)
         self.boundaryGroup.add(self.lowerboundary)
@@ -126,6 +137,7 @@ class ArPongModel():
 
     def update(self):
         """updates all the components the model has"""
+        self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
 
         if menu.state == "menu":
             self.triggerarea1.areaSurveillance(self.cursor, menu, "state", "game")
@@ -138,7 +150,6 @@ class ArPongModel():
             self.score.update()
 
             boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False)
-            print(boundaryBounce)
             if len(boundaryBounce)>0:
                 self.ball.movingDirection[1] = -self.ball.movingDirection[1]
 
@@ -154,16 +165,12 @@ class ArPongMouseController():
 
     def handle_event(self,event):
         if event.type == MOUSEMOTION:
-
             if menu.state == "menu" or "select_speed":
                 self.model.cursor.update(event.pos[0], event.pos[1])
 
             if menu.state == "game":
                 self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
                 self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
-
-
-
 
 
 class Ball(pygame.sprite.Sprite):
@@ -212,6 +219,40 @@ class boundary(pygame.sprite.Sprite):
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
 
 
+
+
+class Paddle(boundary):
+    """This is the movable paddle"""
+    def __init__(self, x, y,height, width):
+        """ Initialize a paddle with the specified height, width,
+            and position (x,y) """
+        super(Paddle,self).__init__(x,y,height,width)
+
+
+    def draw(self,screen):
+        pygame.draw.rect(screen,pygame.Color(244, 65, 65),pygame.Rect(self.x,self.y,self.width,self.height))
+
+    def update(self,y):
+         """maybe used to change position although the position is accessed by the handle_event"""
+         self.y=y
+         self.rect.y=y
+
+class Score():
+    """this is the score"""
+    def __init__(self):
+        self.player1 = 0
+        self.player2 = 0
+        self.position = (0.0)
+
+    def draw(self,screen):
+        """print score for now, needs to print the score on the screen"""
+        # print("Player 1: ", self.player1)
+        # print("Player 2: ", self.player2)
+
+    def update(self):
+        """needs to count the score"""
+        pass
+
 class Cursor():
     def __init__(self, x, y, radius):
         self.x = x
@@ -219,15 +260,12 @@ class Cursor():
         self.radius = radius
 
     def draw(self, screen):
-        print(self.x, self.y)
+        #print(self.x, self.y)
         pygame.draw.circle(screen, (255, 20, 147), (self.x,self.y), self.radius)
-
-
 
     def update(self, x, y):
         self.x = x
         self.y = y
-
 
 class CursorRecognition():
     """Recognizes a cursor that hovers over an area and triggers a change of an attribute of an object_to_change.
@@ -260,38 +298,6 @@ class CursorRecognition():
         if self.counter == self.limit:
             setattr(object_to_change, attribute_of_object, change_attribute_to)
 
-
-class Paddle(boundary):
-    """This is the movable paddle"""
-    def __init__(self, x, y,height, width):
-        """ Initialize a paddle with the specified height, width,
-            and position (x,y) """
-        super(Paddle,self).__init__(x,y,height,width)
-
-
-    def draw(self,screen):
-        pygame.draw.rect(screen,pygame.Color(244, 65, 65),pygame.Rect(self.x,self.y,self.width,self.height))
-
-    def update(self,y):
-         """maybe used to change position although the position is accessed by the handle_event"""
-         self.y=y
-
-class Score():
-    """this is the score"""
-    def __init__(self):
-        self.player1 = 0
-        self.player2 = 0
-        self.position = (0.0)
-
-    def draw(self,screen):
-        """print score for now, needs to print the score on the screen"""
-        # print("Player 1: ", self.player1)
-        # print("Player 2: ", self.player2)
-
-    def update(self):
-        """needs to count the score"""
-        pass
-
 def Main(model,view,controller):
     """Update graphics and check for pygame events."""
     running = True
@@ -302,16 +308,18 @@ def Main(model,view,controller):
             controller.handle_event(event)
         model.update()
         view.draw()
-        time.sleep(0.001)
-
+        clock.tick(fps)
 
 if __name__ == '__main__':
     pygame.init()
-    screenSize = (1500,1000)
+    clock = pygame.time.Clock()
+    fps = 60
+    screenSize = [1500,1000]
+    camera = OR.setup(screenSize)
     menu = Menu()
     menu.state = "select_speed"
     #arguments are screenSize, the boundaryOffset, boundaryThickness, ballRadius, ballSpeed
-    model = ArPongModel(screenSize,(50,50),10,20,1)
+    model = ArPongModel(screenSize,(50,50),10,20,5,camera)
     view = PlayboardWindowView(model,screenSize, menu)
     view._draw_background()
     controller = ArPongMouseController(model)

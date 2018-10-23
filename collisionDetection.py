@@ -66,8 +66,6 @@ def main():
             # if collision is detected call a function in your case destroy
             # bullet
 
-        else:
-            player.rect.y += direction
 
         player_group.draw(screen)
         wall_group.draw(screen)
