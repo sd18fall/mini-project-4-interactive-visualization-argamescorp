@@ -81,7 +81,7 @@ class PlayboardWindowView():
             pygame.display.update()
 
 class Menu():
-    """State machine that regulates whether or not we see the menu or the
+    """State machine that regulates whether or not we see the menu or the game
     The different states are:
     - "menu"
     - "select_speed"
@@ -91,8 +91,6 @@ class Menu():
     - You don't need to add a state in the Menu() class. Just update the docstring to keep the documentation updated
     - Add an if-statement with the state name to the draw() function in the class PlayboardWindowView()
     - Add an if-statement with the state name t0 the handle_event() function in the class ArPongMouseController()
-    - Add
-
     """
     def __init__(self):
         self.state = "menu"
@@ -115,7 +113,7 @@ class ArPongModel():
         self.score = Score()
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
         #Tigger areas
-        self.triggerarea1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
+        self.triggerarea1 = CursorRecognition(50, [50, self.height/2-50, 100,100])
         #self.triggerNumber1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
         #initialize the sprite groups for collision detection
         self.camera = camera
@@ -140,7 +138,7 @@ class ArPongModel():
         self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
 
         if menu.state == "menu":
-            self.triggerarea1.areaSurveillance(self.cursor, menu, "state", "game")
+            self.triggerarea1.areaSurveillance(self.cursor, "select_speed", menu, "state", "select_speed")
 
         if menu.state == "game":
             self.ball.update()
@@ -272,23 +270,26 @@ class CursorRecognition():
     counts up every loop the XY object is still in the same area.
 
     counter_limit -- int, the limit for when "something" should be triggered
-    triggerArea -- list of form: [x1,y1,x2,y2] - 1 referring to lower left corner of rectangle, 2 referring to upper right corner of rectangle
+    triggerArea -- list of form: same as pygame draw rectangle - [upper left corner x, upper left corner y, length in x direction, length in y direction]
     """
     def __init__(self, counter_limit, area):
         self.counter = 0 #Counter for area
         self.limit = counter_limit
-        self.triggerArea = area
+        self.input = area
+        self.triggerArea = [self.input[0], self.input[1]+self.input[3], self.input[0]+self.input[2], self.input[1]]
 
-    def areaSurveillance(self, cursor, object_to_change, attribute_of_object, change_attribute_to):
+    def areaSurveillance(self, cursor, change_state_to, object_to_change, attribute_of_object, change_attribute_to):
         """With a specific cursor as an input, change the attribute of an object to a specific value
 
         cursor -- cursor.x should be x coordinate, cursor.y should be y coordinate
+        change_state_to -- changes state of game. To stay in same state just input the same state here and below
         object_to_change -- pass in the class object to change
         attribute_of_object -- as a string, pass in the attribute of the corresponding class object to change
         change_attribute_to -- pass in the value object.attribute needs to be changed to when triggered
         """
+        print(self.input, self. triggerArea)
         if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
-            if int(cursor.y) in range(int(self.triggerArea[1]), int(self.triggerArea[3]+1)):
+            if int(cursor.y) in range(int(self.triggerArea[3]+1), int(self.triggerArea[1])):  # y-coordinates flipped since y coordinates are upside down
                 self.counter += 1
             else:
                 self.counter = 0
@@ -296,6 +297,7 @@ class CursorRecognition():
             self.counter = 0
 
         if self.counter == self.limit:
+            menu.state = change_state_to
             setattr(object_to_change, attribute_of_object, change_attribute_to)
 
 def Main(model,view,controller):
@@ -317,7 +319,7 @@ if __name__ == '__main__':
     screenSize = [1500,1000]
     camera = OR.setup(screenSize)
     menu = Menu()
-    menu.state = "select_speed"
+    menu.state = "menu"
     #arguments are screenSize, the boundaryOffset, boundaryThickness, ballRadius, ballSpeed
     model = ArPongModel(screenSize,(50,50),10,20,5,camera)
     view = PlayboardWindowView(model,screenSize, menu)
