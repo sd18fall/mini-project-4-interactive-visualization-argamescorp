@@ -1,4 +1,5 @@
-"""AR Game file
+"""
+AR Game file
 
 @authors: Richard Ballaux, Viktor Deturck, Leon Santen"""
 import pygame
@@ -105,16 +106,17 @@ class ArPongModel():
         boundaryLength = self.width-2*boundaryOffset[0]
         self.upperboundary = boundary(boundaryOffset[0],boundaryOffset[1],boundaryThickness,boundaryLength)
         self.lowerboundary = boundary(boundaryOffset[0],self.height-boundaryOffset[1],boundaryThickness,boundaryLength)
-        self.ball = Ball(500,500,ballRadius)
+        self.ball = Ball(int(self.width/5),int(self.height/5),ballRadius)
         paddleWidth = 10
         paddleHeight = 100
         cursorRadius = 20
         self.leftPaddle = Paddle(10,self.height/2,paddleHeight,paddleWidth)
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
-        self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
         self.score = Score()
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
-        #Tigger areas
+
+        self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
+        #Trigger areas
         self.triggerarea1 = CursorRecognition(50, [50, self.height/2-50, 100,100])
         self.triggerNumber1 = CursorRecognition(50, [int((self.width/6)*1)-50, int(self.height/2)-150, 150,150])
         self.triggerNumber2 = CursorRecognition(50, [int((self.width/6)*2)-50, int(self.height/2)+150, 150,150])
@@ -123,10 +125,10 @@ class ArPongModel():
         self.triggerNumber5 = CursorRecognition(50, [int((self.width/6)*5)-50, int(self.height/2)-150, 150,150])
 
 
-
-        #initialize the sprite groups for collision detection
         self.camera = camera
         self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
+
+        #initialize the sprite groups for collision detection
         self.boundaryGroup = pygame.sprite.Group()
         self.boundaryGroup.add(self.upperboundary)
         self.boundaryGroup.add(self.lowerboundary)
@@ -144,7 +146,7 @@ class ArPongModel():
 
     def update(self):
         """updates all the components the model has dependent on what state menu.state is in"""
-        self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
+        #self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
 
         if menu.state == "menu":
             self.triggerarea1.areaSurveillance(self.cursor, "select_speed", menu, "state", "select_speed")
@@ -163,7 +165,6 @@ class ArPongModel():
             #the paddles dont need the update because the handle_event can access the position of the paddles
             #self.leftPaddle.update()
             #self.rightPaddle.update()
-            self.score.update()
 
             boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False)
             if len(boundaryBounce)>0:
@@ -172,10 +173,18 @@ class ArPongModel():
             paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
             if len(paddleBounce)>0:
                 self.ball.movingDirection[0] = -self.ball.movingDirection[0]
+            #give the players
+            if self.ball.x < 5:
+                self.score.update(0)
+                menu.state == "menu"
+            if self.ball.x > self.width-5:
+                self.score.update(1)
+                menu.state == "menu"
+
 
 
 class ArPongMouseController():
-    """handles input first from the mouse and later on from the camera"""
+    """handles input from the mouse"""
     def __init__(self,model):
         self.model = model
 
@@ -187,6 +196,20 @@ class ArPongMouseController():
             if menu.state == "game":
                 self.model.rightPaddle.update(event.pos[1]-self.model.rightPaddle.height/2.0)
                 self.model.leftPaddle.update(event.pos[0]-self.model.leftPaddle.height/2.0)
+
+class ArPongObjectRecogController():
+    """handles the input from the camera"""
+    def __init__(self,model):
+        self.model = model
+
+    def update(self):
+        self.model.objectCoordinates, self.model.cameraImage = OR.getCoords(self.model.camera)
+        print(self.model.objectCoordinates)
+        self.model.cursor.update(self.model.objectCoordinates[0][0],self.model.objectCoordinates[0][1])
+        if self.model.objectCoordinates[0][0] != -1:
+            self.model.leftPaddle.update(self.model.objectCoordinates[0][1]-self.model.leftPaddle.height/2.0)
+        if self.model.objectCoordinates[0][0] != -1:
+            self.model.rightPaddle.update(self.model.objectCoordinates[1][1]-self.model.rightPaddle.height/2.0)
 
 
 class Ball(pygame.sprite.Sprite):
@@ -237,9 +260,6 @@ class boundary(pygame.sprite.Sprite):
     def draw(self,screen):
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
 
-
-
-
 class Paddle(boundary):
     """This is the movable paddle"""
     def __init__(self, x, y,height, width):
@@ -261,16 +281,25 @@ class Score():
     def __init__(self):
         self.player1 = 0
         self.player2 = 0
-        self.position = (0.0)
+        self.numberfont = pygame.font.SysFont("monospace", 85, bold=True)
 
     def draw(self,screen):
         """print score for now, needs to print the score on the screen"""
         # print("Player 1: ", self.player1)
         # print("Player 2: ", self.player2)
 
-    def update(self):
+        score1 = self.numberfont.render(str(self.player1), 1, (255,255,255))
+        screen.blit(score1, (int((model.width/6)*4),model.height/2-115))
+        score2 = self.numberfont.render(str(self.player2), 1, (255,255,255))
+        screen.blit(score2, (int((model.width/6)*5),model.height/2-115))
+
+    def update(self,player):
         """needs to count the score"""
-        pass
+        if player == 0:
+            self.player1 +=1
+        if player == 1:
+            self.player2 +=1
+
 
 class Cursor():
     """Cursor representation for navigating through the settings
@@ -336,7 +365,8 @@ def Main(model,view,controller):
         for event in pygame.event.get():
             if event.type is pygame.QUIT:
                 running = False
-            controller.handle_event(event)
+            #controller.handle_event(event)
+        controller.update()
         model.update()
         view.draw()
         clock.tick(fps)
@@ -345,7 +375,7 @@ if __name__ == '__main__':
     pygame.init()
     clock = pygame.time.Clock()
     fps = 60
-    screenSize = [1500,1000]
+    screenSize = [800,600]
     camera = OR.setup(screenSize)
     menu = Menu()
     menu.state = "menu"
@@ -353,5 +383,6 @@ if __name__ == '__main__':
     model = ArPongModel(screenSize,(50,50),10,20,camera)
     view = PlayboardWindowView(model,screenSize, menu)
     view._draw_background()
-    controller = ArPongMouseController(model)
+    #controller = ArPongMouseController(model)
+    controller = ArPongObjectRecogController(model)
     Main(model,view,controller)

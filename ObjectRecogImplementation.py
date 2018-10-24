@@ -73,6 +73,8 @@ def getCoords(cam):
             if i == len(widthList):
                 break
             i +=1
+            cv2.imshow("cam",img)
+            cv2.waitKey(10)
     return centerCoords,img
     #print (centerCoords)
 
@@ -81,8 +83,8 @@ def main():
     while True:
         coords,img = getCoords(cam)
         print(coords)
-        cv2.imshow("cam",img)
-        cv2.waitKey(10)
+        #cv2.imshow("cam",img)
+        #cv2.waitKey(10)
 
 if __name__ == '__main__':
     main()
