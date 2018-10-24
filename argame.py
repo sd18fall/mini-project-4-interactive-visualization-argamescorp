@@ -94,16 +94,17 @@ class Menu():
     """
     def __init__(self):
         self.state = "menu"
+        self.settings_ballSpeed = 5
 
 class ArPongModel():
     """encodes a model of the game state"""
-    def __init__(self,windowSize,boundaryOffset, boundaryThickness,ballRadius, ballSpeed,camera):
+    def __init__(self,windowSize,boundaryOffset, boundaryThickness,ballRadius,camera):
         self.width = windowSize[0]
         self.height = windowSize[1]
         boundaryLength = self.width-2*boundaryOffset[0]
         self.upperboundary = boundary(boundaryOffset[0],boundaryOffset[1],boundaryThickness,boundaryLength)
         self.lowerboundary = boundary(boundaryOffset[0],self.height-boundaryOffset[1],boundaryThickness,boundaryLength)
-        self.ball = Ball(500,500,ballRadius,ballSpeed)
+        self.ball = Ball(500,500,ballRadius)
         paddleWidth = 10
         paddleHeight = 100
         cursorRadius = 20
@@ -114,7 +115,14 @@ class ArPongModel():
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
         #Tigger areas
         self.triggerarea1 = CursorRecognition(50, [50, self.height/2-50, 100,100])
-        #self.triggerNumber1 = CursorRecognition(300, [50,self.height/2-50,150,self.height/2+50])
+        self.triggerNumber1 = CursorRecognition(50, [int((self.width/6)*1)-50, int(self.height/2)-150, 150,150])
+        self.triggerNumber2 = CursorRecognition(50, [int((self.width/6)*2)-50, int(self.height/2)+150, 150,150])
+        self.triggerNumber3 = CursorRecognition(50, [int((self.width/6)*3)-50, int(self.height/2)-150, 150,150])
+        self.triggerNumber4 = CursorRecognition(50, [int((self.width/6)*4)-50, int(self.height/2)+150, 150,150])
+        self.triggerNumber5 = CursorRecognition(50, [int((self.width/6)*5)-50, int(self.height/2)-150, 150,150])
+
+
+
         #initialize the sprite groups for collision detection
         self.camera = camera
         self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
@@ -139,6 +147,15 @@ class ArPongModel():
 
         if menu.state == "menu":
             self.triggerarea1.areaSurveillance(self.cursor, "select_speed", menu, "state", "select_speed")
+
+        if menu.state == "select_speed":
+            self.triggerNumber1.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 5)
+            self.triggerNumber2.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 10)
+            self.triggerNumber3.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 15)
+            self.triggerNumber4.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 22)
+            self.triggerNumber5.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 28)
+
+
 
         if menu.state == "game":
             self.ball.update()
@@ -173,12 +190,11 @@ class ArPongMouseController():
 
 class Ball(pygame.sprite.Sprite):
     """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
-    def __init__(self,x,y,radius,speed):
+    def __init__(self,x,y,radius):
         pygame.sprite.Sprite.__init__(self)
         self.x=x
         self.y=y
         self.radius=radius
-        self.speed=speed
         #the movingDirection needs to be between 0-1
         self.movingDirection = [1,-1]
 
@@ -190,11 +206,10 @@ class Ball(pygame.sprite.Sprite):
 
     def update(self):
         """after one loop has gone by, move the ball in the movingDirection of the movement"""
-        self.x=self.x + self.movingDirection[0]*self.speed
-        self.rect.x = self.rect.x + self.movingDirection[0]*self.speed
-        self.y = self.y + self.movingDirection[1]*self.speed
-        self.rect.y = self.rect.y + self.movingDirection[1]*self.speed
-
+        self.x=self.x + self.movingDirection[0]*menu.settings_ballSpeed
+        self.rect.x = self.rect.x + self.movingDirection[0]*menu.settings_ballSpeed
+        self.y = self.y + self.movingDirection[1]*menu.settings_ballSpeed
+        self.rect.y = self.rect.y + self.movingDirection[1]*menu.settings_ballSpeed
 
     def draw(self,screen):
         """draw the ball on its new position"""
@@ -321,7 +336,7 @@ if __name__ == '__main__':
     menu = Menu()
     menu.state = "menu"
     #arguments are screenSize, the boundaryOffset, boundaryThickness, ballRadius, ballSpeed
-    model = ArPongModel(screenSize,(50,50),10,20,5,camera)
+    model = ArPongModel(screenSize,(50,50),10,20,camera)
     view = PlayboardWindowView(model,screenSize, menu)
     view._draw_background()
     controller = ArPongMouseController(model)
