@@ -95,6 +95,7 @@ class Menu():
     def __init__(self):
         self.state = "menu"
         self.settings_ballSpeed = 5
+        self.settings_cursorColor = (255, 20, 147)
 
 class ArPongModel():
     """encodes a model of the game state"""
@@ -142,7 +143,7 @@ class ArPongModel():
 
 
     def update(self):
-        """updates all the components the model has"""
+        """updates all the components the model has dependent on what state menu.state is in"""
         self.objectCoordinates, self.cameraImage = OR.getCoords(self.camera)
 
         if menu.state == "menu":
@@ -189,7 +190,11 @@ class ArPongMouseController():
 
 
 class Ball(pygame.sprite.Sprite):
-    """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player"""
+    """this is the ball that bounces on the walls, the paddles and that you try to get in the goal of the other player
+    x -- initial x coordinate of the ball
+    y -- initial y coordinate of the ball
+    radius -- radius of the ball
+    """
     def __init__(self,x,y,radius):
         pygame.sprite.Sprite.__init__(self)
         self.x=x
@@ -205,7 +210,8 @@ class Ball(pygame.sprite.Sprite):
 
 
     def update(self):
-        """after one loop has gone by, move the ball in the movingDirection of the movement"""
+        """after one loop has gone by, move the ball in the movingDirection of the movement
+        This function uses menu.settings_ballSpeed to as the speed parameter. This ensures that it can be changed by the areaSurveillance method"""
         self.x=self.x + self.movingDirection[0]*menu.settings_ballSpeed
         self.rect.x = self.rect.x + self.movingDirection[0]*menu.settings_ballSpeed
         self.y = self.y + self.movingDirection[1]*menu.settings_ballSpeed
@@ -267,6 +273,11 @@ class Score():
         pass
 
 class Cursor():
+    """Cursor representation for navigating through the settings
+    x -- initial x coordinate of the cursor
+    y -- initial y coordinate of the cursor
+    radius -- radius of the cursor
+    """
     def __init__(self, x, y, radius):
         self.x = x
         self.y = y
@@ -274,7 +285,7 @@ class Cursor():
 
     def draw(self, screen):
         #print(self.x, self.y)
-        pygame.draw.circle(screen, (255, 20, 147), (self.x,self.y), self.radius)
+        pygame.draw.circle(screen, menu.settings_cursorColor, (self.x,self.y), self.radius)
 
     def update(self, x, y):
         self.x = x
@@ -297,12 +308,11 @@ class CursorRecognition():
         """With a specific cursor as an input, change the attribute of an object to a specific value
 
         cursor -- cursor.x should be x coordinate, cursor.y should be y coordinate
-        change_state_to -- changes state of game. To stay in same state just input the same state here and below
+        change_state_to -- changes state of game. To stay in same state just input the same state here
         object_to_change -- pass in the class object to change
         attribute_of_object -- as a string, pass in the attribute of the corresponding class object to change
         change_attribute_to -- pass in the value object.attribute needs to be changed to when triggered
         """
-        print(self.input, self. triggerArea)
         if int(cursor.x) in range(int(self.triggerArea[0]), int(self.triggerArea[2]+1)):
             if int(cursor.y) in range(int(self.triggerArea[3]+1), int(self.triggerArea[1])):  # y-coordinates flipped since y coordinates are upside down
                 self.counter += 1
@@ -316,7 +326,11 @@ class CursorRecognition():
             setattr(object_to_change, attribute_of_object, change_attribute_to)
 
 def Main(model,view,controller):
-    """Update graphics and check for pygame events."""
+    """Update graphics and check for pygame events.
+    model -- an object of the type ArPongModel()
+    view -- an object of the type PlayboardWindowView()
+    controller -- an object ArPongMouseController()
+    """
     running = True
     while running:
         for event in pygame.event.get():
