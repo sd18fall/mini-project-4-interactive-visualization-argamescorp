@@ -14,6 +14,14 @@ def setup(resolution):
     horRes = resolution[0]
     global vertRes
     vertRes = resolution[1]
+    global analyze_res_width
+    analyze_res_width = 500
+    global analyze_res_height
+    analyze_res_height = 281
+    global widht_ratio
+    widht_ratio = horRes/analyze_res_width
+    global height_ratio
+    height_ratio = vertRes/analyze_res_height
 
     # Make a VideoCapture object (camera)
     cam= cv2.VideoCapture(0)
@@ -36,10 +44,15 @@ def getCoords(cam):
     orImg=cv2.resize(orImg,(horRes,vertRes))
     global img
     img = cv2.flip(orImg, 1)
+
+    #resize image to analyze
+    resized_img = cv2.resize(img,(analyze_res_width,analyze_res_height))
     # convert BGR to HSV
-    imgHSV= cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+    imgHSV= cv2.cvtColor(resized_img,cv2.COLOR_BGR2HSV)
+
+    blur = cv2.blur(imgHSV,(1,1))
     # create the Mask, look for the object in this color range
-    mask=cv2.inRange(imgHSV,lowerBound,upperBound)
+    mask=cv2.inRange(blur,lowerBound,upperBound)
     # Delete all the noise in the image
     maskOpen=cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
     maskClose=cv2.morphologyEx(maskOpen,cv2.MORPH_CLOSE,kernelClose)
@@ -54,7 +67,7 @@ def getCoords(cam):
         x,y,w,h=cv2.boundingRect(conts[i])
         #cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255), 2)
         (x,y),rad = cv2.minEnclosingCircle(conts[i])
-        center = (int(x),int(y))
+        center = (int(widht_ratio*x),int(height_ratio*y))
         coords.append(center)
         #radius.append(int(rad))
         widthList.append(w)
@@ -74,14 +87,14 @@ def getCoords(cam):
                 break
             i +=1
 
-            cv2.imshow("cam",img)
+            cv2.imshow("cam",cv2.blur(img,(40,40)) ) #
             cv2.waitKey(10)
 
     return centerCoords,img
     #print (centerCoords)
 
 def main():
-    cam = setup([1280,720])
+    cam = setup([1000 ,562])
     while True:
         coords,img = getCoords(cam)
         print(coords)

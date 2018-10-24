@@ -256,10 +256,16 @@ class Boundary(pygame.sprite.Sprite):
         self.rect.center = [self.x+width/2,self.y+height/2]
 
     def draw(self,screen):
+        """draws the boundaries of the game"""
         pygame.draw.rect(screen,pygame.Color(69, 244, 66),pygame.Rect(self.x,self.y,self.width,self.height))
 
 class Paddle(Boundary):
-    """This is the movable paddle"""
+    """This is the movable paddle
+    x -- x coordinate of upper left corner
+    y -- y coordinate of upper left corner
+    height -- y lenght of rectangle
+    width -- x lenght of rectangle
+    """
     def __init__(self, x, y,height, width):
         """ Initialize a paddle with the specified height, width,
             and position (x,y) """
@@ -323,7 +329,7 @@ class CursorRecognition():
     counts up every loop the XY object is still in the same area.
 
     counter_limit -- int, the limit for when "something" should be triggered
-    triggerArea -- list of form: same as pygame draw rectangle - [upper left corner x, upper left corner y, length in x direction, length in y direction]
+    area -- list of form: same as pygame draw rectangle - [upper left corner x, upper left corner y, length in x direction, length in y direction]
     """
     def __init__(self, counter_limit, area):
         self.counter = 0 #Counter for area
@@ -373,10 +379,10 @@ if __name__ == '__main__':
     pygame.init()
     clock = pygame.time.Clock()
     fps = 60
-    screenSize = [800,600]
+    screenSize = [1500,1000]
     camera = OR.setup(screenSize)
     menu = Menu()
-    menu.state = "game"
+    menu.state = "menu"
     #arguments are screenSize, the BoundaryOffset, BoundaryThickness, ballRadius, ballSpeed
     model = ArPongModel(screenSize,(50,50),10,camera)
     view = PlayboardWindowView(model,screenSize, menu)
