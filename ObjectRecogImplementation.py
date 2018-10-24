@@ -53,7 +53,7 @@ def getCoords(cam):
     for i in range(len(conts)):
         x,y,w,h=cv2.boundingRect(conts[i])
         #cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255), 2)
-        #(x,y),rad = cv2.minEnclosingCircle(conts[i])
+        (x,y),rad = cv2.minEnclosingCircle(conts[i])
         center = (int(x),int(y))
         coords.append(center)
         #radius.append(int(rad))
@@ -69,12 +69,14 @@ def getCoords(cam):
             coords.remove(center)
             width = max(widthList)
             widthList.remove(max(widthList))
-            #cv2.circle(img,center,rad,(0,22,0),2)
+            cv2.circle(img,center,int(rad),(0,22,0),2)
             if i == len(widthList):
                 break
             i +=1
+
             cv2.imshow("cam",img)
             cv2.waitKey(10)
+
     return centerCoords,img
     #print (centerCoords)
 
