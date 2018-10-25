@@ -18,8 +18,8 @@ def setup(resolution):
     analyze_res_width = 500
     global analyze_res_height
     analyze_res_height = 281
-    global widht_ratio
-    widht_ratio = horRes/analyze_res_width
+    global width_ratio
+    width_ratio = horRes/analyze_res_width
     global height_ratio
     height_ratio = vertRes/analyze_res_height
 
@@ -61,21 +61,20 @@ def getCoords(cam):
     maskClose=cv2.morphologyEx(maskOpen,cv2.MORPH_CLOSE,kernelClose)
 
     maskFinal=maskClose # This is our final image with object in black-white (object is white)
-    im2, conts,h=cv2.findContours(maskFinal.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    im2, conts,h=cv2.findContours(maskFinal.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE) # Finds contours of the object
     coords = []
     widthList = []
-    centerCoords = [(-1,-1),(-1,-1)]
-    #cv2.drawContours(img,conts,-1,(255,0,0),3)
+    centerCoords = [(-1,-1),(-1,-1)] # Initialize the coordinates list
+
     for i in range(len(conts)):
-        x,y,w,h=cv2.boundingRect(conts[i])
-        #cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255), 2)
-        #(x,y),rad = cv2.minEnclosingCircle(conts[i])
-        center = (int(widht_ratio*x),int(height_ratio*y))
+        x,y,w,h=cv2.boundingRect(conts[i])  #Draws rectangle around contours
+        #(x,y),rad = cv2.minEnclosingCircle(conts[i])       # draws circle instead of rectangle (slower)
+        center = (int(width_ratio*(x+w/2)),int(height_ratio*(y-h/2)))
         coords.append(center)
         widthList.append(w)
         i = 0
-    if len(widthList) > 0:
-        while i < 2:
+    if len(widthList) > 0: #If there is more than 1 object detected
+        while i < 2:    # Searches for the 2 biggest objects and stores them right or left in the list, according to the place of the object
             center = coords[widthList.index(max(widthList))]
             if center[0] < horRes/2:
                 centerCoords[0] = center
@@ -89,12 +88,8 @@ def getCoords(cam):
                 break
             i +=1
 
-            cv2.imshow("cam",img)
-            #cv2.imshow("cam",cv2.blur(img,(40,40)) )
-            #cv2.waitKey(1)
-
     return centerCoords,backGroundImage
-    #print (centerCoords)
+
 
 # test code to see if the functions work
 def main():
