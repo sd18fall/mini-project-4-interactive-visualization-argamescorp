@@ -75,6 +75,21 @@ class PlayboardWindowView():
                  component.draw(self.screen)
             pygame.display.update()
 
+        if menu.state == "endgame":
+            self._draw_background()
+            pygame.draw.rect(self.screen, (150,150,0), pygame.Rect(int((model.width/6)), int(model.height/2)-50, int(model.width*4/6),150))
+            if menu.winner ==1:
+                player = self.myfont.render("LEFT PLAYER WON", 1, self.ColorBlack)
+            if menu.winner ==2:
+                player = self.myfont.render("RIGHT PLAYER WON", 1, self.ColorBlack)
+            self.screen.blit(player, (int((model.width/6)*2),model.height/2))
+
+            pygame.draw.rect(self.screen, (0,150,0), pygame.Rect(int((model.width/6)*5)-50, int(model.height/2)-150, 150,150))
+            number = self.myfont.render("Replay", 1, self.ColorBlack)
+            self.screen.blit(number, (int((model.width/6)*5-50),model.height/2-115))
+            self.model.cursor.draw(self.screen)
+            pygame.display.update()
+
 class Menu():
     """State machine that regulates whether or not we see the menu or the game
     The different states are:
@@ -163,7 +178,7 @@ class ArPongModel():
                 pygame.mixer.Sound.play(self.paddleSound)
 
             if self.ball.x < 5:
-                self.score.update(0)
+                self.score.update(1)
                 pygame.mixer.Sound.play(self.deathSound)
                 self.ball.x = int(self.width/5)
                 self.ball.rect.x = self.ball.x
@@ -172,13 +187,19 @@ class ArPongModel():
                 self.ball.movingDirection=[1,1]
 
             if self.ball.x > self.width-5:
-                self.score.update(1)
+                self.score.update(0)
                 pygame.mixer.Sound.play(self.deathSound)
                 self.ball.x = int(4*self.width/5)
                 self.ball.rect.x = self.ball.x
                 self.ball.y = int(self.height/5)
                 self.ball.rect.y = self.ball.y
                 self.ball.movingDirection=[-1,1]
+
+        if menu.state == "endgame":
+            self.triggerNumber5.areaSurveillance(self.cursor, "menu", menu, "state", "menu")
+            self.score.reset()
+
+
 
 
 class ArPongMouseController():
@@ -305,7 +326,16 @@ class Score():
             self.player1 +=1
         if player == 1:
             self.player2 +=1
+        if self.player1>4:
+            menu.state = "endgame"
+            menu.winner = 1
+        if self.player2>4:
+            menu.state = "endgame"
+            menu.winner = 2
 
+    def reset(self):
+        self.player1 = 0
+        self.player2 = 0
 
 class Cursor():
     """Cursor representation for navigating through the settings
