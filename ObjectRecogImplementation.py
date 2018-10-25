@@ -44,6 +44,8 @@ def getCoords(cam):
     orImg=cv2.resize(orImg,(horRes,vertRes))
     global img
     img = cv2.flip(orImg, 1)
+    backGroundImage = img
+
 
     #resize image to analyze
     resized_img = cv2.resize(img,(analyze_res_width,analyze_res_height))
@@ -87,11 +89,11 @@ def getCoords(cam):
                 break
             i +=1
 
-            #cv2.imshow("cam",img)
+            cv2.imshow("cam",img)
             #cv2.imshow("cam",cv2.blur(img,(40,40)) )
             #cv2.waitKey(1)
 
-    return centerCoords,img
+    return centerCoords,backGroundImage
     #print (centerCoords)
 
 def main():
