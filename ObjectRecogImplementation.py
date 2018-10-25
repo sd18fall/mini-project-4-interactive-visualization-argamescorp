@@ -87,8 +87,9 @@ def getCoords(cam):
                 break
             i +=1
 
-            cv2.imshow("cam",cv2.blur(img,(40,40)) ) #
-            cv2.waitKey(10)
+            #cv2.imshow("cam",img)
+            #cv2.imshow("cam",cv2.blur(img,(40,40)) )
+            #cv2.waitKey(1)
 
     return centerCoords,img
     #print (centerCoords)

@@ -9,8 +9,6 @@ import ObjectRecogImplementation as OR
 from PIL import Image
 import numpy as np
 
-
-
 class PlayboardWindowView():
     """this board includes the outlines, the ball, the paddles and the goals"""
     def __init__(self,model,screen_size, menu):
@@ -26,11 +24,11 @@ class PlayboardWindowView():
     def _draw_background(self, color = (0,0,0)):
         """draw background with plain Color
         color -- RGB format (R,G,B), values from 0 to 255, default color is black"""
-        self.screen.fill(color)
+        #self.screen.fill(color)
 
-        # newSurface = pygame.surfarray.make_surface(self.model.cameraImage)
-        # self.screen.blit(newSurface,(0,0))
-        #pygame.display.update()
+        newSurface = pygame.surfarray.make_surface(self.model.cameraImage)
+        self.screen.blit(newSurface,(0,0))
+        pygame.display.update()
 
     def draw(self):
         """draws corresponding to the state of menu.state the different menu settings or game"""
@@ -106,13 +104,16 @@ class ArPongModel():
         boundaryLength = self.width-2*boundaryOffset[0]
         self.upperboundary = Boundary(boundaryOffset[0],boundaryOffset[1],boundaryThickness,boundaryLength)
         self.lowerboundary = Boundary(boundaryOffset[0],self.height-boundaryOffset[1],boundaryThickness,boundaryLength)
-        self.newGame()
+
+        self.ball = Ball(int(self.width/5),int(self.height/5),20)
+
         paddleWidth = 10
         paddleHeight = 100
         cursorRadius = 20
         self.leftPaddle = Paddle(10,self.height/2,paddleHeight,paddleWidth)
         self.rightPaddle = Paddle(self.width-10-paddleWidth,self.height/2,paddleHeight,paddleWidth)
         self.score = Score()
+
         self.components = (self.upperboundary,self.lowerboundary,self.ball,self.leftPaddle,self.rightPaddle,self.score)
 
         self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
@@ -136,9 +137,9 @@ class ArPongModel():
         self.paddleGroup.add(self.leftPaddle)
         self.paddleGroup.add(self.rightPaddle)
 
-    def newGame(self):
-        self.ball = Ball(int(self.width/5),int(self.height/5),20)
-
+        self.boundarySound = pygame.mixer.Sound("boundaryBounce.wav")
+        self.paddleSound = pygame.mixer.Sound("paddleBounce.wav")
+        self.deathSound = pygame.mixer.Sound("death.wav")
 
     def update(self):
         """updates all the components the model has dependent on what state menu.state is in"""
@@ -154,32 +155,39 @@ class ArPongModel():
             self.triggerNumber4.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 22)
             self.triggerNumber5.areaSurveillance(self.cursor, "game", menu, "settings_ballSpeed", 28)
 
-
-
         if menu.state == "game":
             self.ball.update()
             #the paddles dont need the update because the handle_event can access the position of the paddles
             #self.leftPaddle.update()
             #self.rightPaddle.update()
-
             boundaryBounce = pygame.sprite.spritecollide(self.ball,self.boundaryGroup,False)
             if len(boundaryBounce)>0:
                 self.ball.movingDirection[1] = -self.ball.movingDirection[1]
+                pygame.mixer.Sound.play(self.boundarySound)
 
             paddleBounce = pygame.sprite.spritecollide(self.ball,self.paddleGroup,False)
             if len(paddleBounce)>0:
                 self.ball.movingDirection[0] = -self.ball.movingDirection[0]
+                pygame.mixer.Sound.play(self.paddleSound)
+
             #give the players
             if self.ball.x < 5:
                 self.score.update(0)
-                del self.ball
-                self.newGame()
+                pygame.mixer.Sound.play(self.deathSound)
+                self.ball.x = int(self.width/5)
+                self.ball.rect.x = self.ball.x
+                self.ball.y = int(self.height/5)
+                self.ball.rect.y = self.ball.y
+                self.ball.movingDirection=[1,1]
+
             if self.ball.x > self.width-5:
                 self.score.update(1)
-                del self.ball
-                self.newGame()
-
-
+                pygame.mixer.Sound.play(self.deathSound)
+                self.ball.x = int(4*self.width/5)
+                self.ball.rect.x = self.ball.x
+                self.ball.y = int(self.height/5)
+                self.ball.rect.y = self.ball.y
+                self.ball.movingDirection=[-1,1]
 
 class ArPongMouseController():
     """handles input from the mouse"""
@@ -377,12 +385,13 @@ def Main(model,view,controller):
 
 if __name__ == '__main__':
     pygame.init()
+    pygame.mixer.init()
     clock = pygame.time.Clock()
     fps = 60
     screenSize = [1500,1000]
     camera = OR.setup(screenSize)
     menu = Menu()
-    menu.state = "menu"
+    menu.state = "game"
     #arguments are screenSize, the BoundaryOffset, BoundaryThickness, ballRadius, ballSpeed
     model = ArPongModel(screenSize,(50,50),10,camera)
     view = PlayboardWindowView(model,screenSize, menu)
