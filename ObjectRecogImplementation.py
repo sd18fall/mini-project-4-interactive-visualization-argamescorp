@@ -3,6 +3,13 @@ cv2.__version__
 import numpy as np
 
 def setup(resolution):
+    """
+    Setting up the camera with the resolution, sets a resolution and creates an
+    range of colors to detect. Later this can be set to other colors and maybe
+    color recognition. Camera gets initialized.
+
+    resolution -- a list of the width and height of the screen
+    """
     # Defining a range of the color green
     global lowerBound
     lowerBound=np.array([33,80,40])
@@ -14,10 +21,14 @@ def setup(resolution):
     horRes = resolution[0]
     global vertRes
     vertRes = resolution[1]
+
+    #resolution we want it to analyze (so it doesnt have to analyze the whole picture)
     global analyze_res_width
     analyze_res_width = 500
     global analyze_res_height
     analyze_res_height = 281
+
+    # Variables to adjust the coordinates to the displayed image
     global width_ratio
     width_ratio = horRes/analyze_res_width
     global height_ratio
@@ -29,7 +40,12 @@ def setup(resolution):
 
 
 def getCoords(cam):
+    """
+    Gets the coordinates of the objects in the camera objec and returns the
+    background image. (camera view)
 
+    cam -- camera object
+    """
     # Making kernel to delete noise (open = erosion followed by dilation, close is reversed)
     # MORPH_OPEN deletes noise outside of the object, MORPH_CLOSE inside of the object)
     kernelOpen=np.ones((5,5))
@@ -69,7 +85,7 @@ def getCoords(cam):
     for i in range(len(conts)):
         x,y,w,h=cv2.boundingRect(conts[i])  #Draws rectangle around contours
         #(x,y),rad = cv2.minEnclosingCircle(conts[i])       # draws circle instead of rectangle (slower)
-        center = (int(width_ratio*(x+w/2)),int(height_ratio*(y-h/2)))
+        center = (int(width_ratio*x),int(height_ratio*(y)))
         coords.append(center)
         widthList.append(w)
         i = 0
