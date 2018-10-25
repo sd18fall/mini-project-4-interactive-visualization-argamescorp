@@ -35,7 +35,7 @@ class PlayboardWindowView():
 
         if menu.state == "menu":
             self._draw_background()
-            pygame.draw.rect(self.screen, (250,250,0), pygame.Rect(50, model.height/2-50, 100,100))
+            pygame.draw.rect(self.screen, (250,250,0), pygame.Rect(50, model.height/2-50, 200,200))
             menutext = self.myfont.render("Keep your cursor in the square to start the game", 1, self.ColorGreen)
             self.screen.blit(menutext, (50,50))
             self.model.cursor.draw(self.screen)
@@ -114,7 +114,7 @@ class ArPongModel():
 
         self.cursor = Cursor(int(self.width/2),int(self.height/2), cursorRadius)
         #Trigger areas
-        self.triggerarea1 = CursorRecognition(30, [50, self.height/2-50, 100,100])
+        self.triggerarea1 = CursorRecognition(30, [50, self.height/2-50, 200,200])
         self.triggerNumber1 = CursorRecognition(30, [int((self.width/6)*1)-50, int(self.height/2)-150, 150,150])
         self.triggerNumber2 = CursorRecognition(30, [int((self.width/6)*2)-50, int(self.height/2)+150, 150,150])
         self.triggerNumber3 = CursorRecognition(30, [int((self.width/6)*3)-50, int(self.height/2)-150, 150,150])
