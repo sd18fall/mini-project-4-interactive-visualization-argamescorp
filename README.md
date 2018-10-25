@@ -31,3 +31,6 @@ _or_
 ```
 $ python3 argame.py
 ```
+
+## Final Write-Up
+You can find the final write-up PDF document in this folder. It is called "Final Write Up - Augmented Reality Pong Game" and includes a detailed description of implementation and the project idea. 
