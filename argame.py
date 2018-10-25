@@ -204,7 +204,10 @@ class ArPongObjectRecogController():
     def update(self):
         self.model.objectCoordinates, self.model.cameraImage = OR.getCoords(self.model.camera)
         #print(self.model.objectCoordinates)
-        self.model.cursor.update(self.model.objectCoordinates[0][0],self.model.objectCoordinates[0][1])
+        if self.model.objectCoordinates[1][0]== -1:
+            self.model.cursor.update(self.model.objectCoordinates[0][0],self.model.objectCoordinates[0][1])
+        else:
+            self.model.cursor.update(self.model.objectCoordinates[1][0],self.model.objectCoordinates[1][1])
         if self.model.objectCoordinates[0][0] != -1:
             self.model.leftPaddle.update(self.model.objectCoordinates[0][1]-self.model.leftPaddle.height/2.0)
         if self.model.objectCoordinates[1][0] != -1:
