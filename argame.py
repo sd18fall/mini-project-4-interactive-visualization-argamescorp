@@ -297,7 +297,7 @@ class Score():
         screen.blit(score2, (model.width-100,100))
 
     def update(self,player):
-        """needs to count the score"""
+        """counts the score"""
         if player == 0:
             self.player1 +=1
         if player == 1:

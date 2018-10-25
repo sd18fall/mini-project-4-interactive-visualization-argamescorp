@@ -44,7 +44,9 @@ def getCoords(cam):
     orImg=cv2.resize(orImg,(horRes,vertRes))
     global img
     img = cv2.flip(orImg, 1)
-    backGroundImage = img
+    backGroundImage = cv2.cvtColor(np.rot90(orImg),cv2.COLOR_BGR2RGB)
+
+    #backGroundImage = img
 
 
     #resize image to analyze
@@ -52,9 +54,8 @@ def getCoords(cam):
     # convert BGR to HSV
     imgHSV= cv2.cvtColor(resized_img,cv2.COLOR_BGR2HSV)
 
-    blur = cv2.blur(imgHSV,(1,1))
     # create the Mask, look for the object in this color range
-    mask=cv2.inRange(blur,lowerBound,upperBound)
+    mask=cv2.inRange(imgHSV,lowerBound,upperBound)
     # Delete all the noise in the image
     maskOpen=cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
     maskClose=cv2.morphologyEx(maskOpen,cv2.MORPH_CLOSE,kernelClose)
