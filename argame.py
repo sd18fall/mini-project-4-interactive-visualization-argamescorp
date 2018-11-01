@@ -159,9 +159,9 @@ class ArPongModel():
         self.paddleGroup.add(self.rightPaddle)
 
         #Initialize the sounds
-        self.boundarySound = pygame.mixer.Sound("boundaryBounce.wav")
-        self.paddleSound = pygame.mixer.Sound("paddleBounce.wav")
-        self.deathSound = pygame.mixer.Sound("death.wav")
+        self.boundarySound = pygame.mixer.Sound("/home/lsanten/School/SoftDes/ARGamesCrop/boundaryBounce.wav")
+        self.paddleSound = pygame.mixer.Sound("/home/lsanten/School/SoftDes/ARGamesCrop/paddleBounce.wav")
+        self.deathSound = pygame.mixer.Sound("/home/lsanten/School/SoftDes/ARGamesCrop/death.wav")
 
     def update(self):
         """updates all the components the model has dependent on what state menu.state is in"""
@@ -431,7 +431,7 @@ if __name__ == '__main__':
     pygame.mixer.init()
     clock = pygame.time.Clock()
     fps = 60
-    screenSize = [1500,1000]
+    screenSize = [1800,1000]
     camera = OR.setup(screenSize)
     menu = Menu()
     #We start the game in the menu state
